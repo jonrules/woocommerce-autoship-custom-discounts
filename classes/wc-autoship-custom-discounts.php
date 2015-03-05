@@ -40,14 +40,14 @@ class WC_Autoship_Custom_Discounts {
 	 * @param WC_Autoship_Schedule $schedule
 	 * @param WC_Autoship_Customer $customer
 	 */
-	public static function calculate_product_discount( $product, $item, $schedule, $customer ) {
-		$discount = 0.0;
-		$category_triggers = self::get_discount_category_triggers();
+	public static function calculate_product_discount_rate( $product, $item, $schedule, $customer ) {
+		$discount_rate = 0.0;
+		$category_triggers = self::get_discount_rate_category_triggers();
 		$items = $schedule->get_items();
 		
 		// Category triggers
 		foreach ( $category_triggers as $trigger ) { /* @var $trigger WC_Autoship_Custom_Discounts_Category_Trigger */
-			if ( ! self::product_is_in_category( $product->id, array( $trigger->get_discount_category() ) ) ) {
+			if ( ! self::product_is_in_category( $product->id, array( $trigger->get_discount_rate_category() ) ) ) {
 				continue;
 			}
 			
@@ -60,28 +60,60 @@ class WC_Autoship_Custom_Discounts {
 				}
 				if ( $trigger_count >= $trigger->get_quantity() ) {
 					// Trigger is active
-					$discount = max( $trigger->get_discount(), $discount );
+					$discount_rate = max( $trigger->get_discount_rate(), $discount_rate );
 					break;
 				}
 			}
 		}
 		
-		return $discount;
+		return $discount_rate;
 	}
 	
 	/**
 	 * @param WC_Autoship_Customer $customer
 	 */
-	public static function calculate_user_role_discount( $customer ) {
-		$discount = 0.0;
-		$discount_user_roles = self::get_discount_user_roles();
+	public static function calculate_user_role_discount_rate( $customer ) {
+		$discount_rate = 0.0;
+		$discount_rate_user_roles = self::get_discount_rate_user_roles();
 		
-		foreach ( $discount_user_roles as $role ) { /* @var $role WC_Autoship_Custom_Discounts_User_Role */
+		foreach ( $discount_rate_user_roles as $role ) { /* @var $role WC_Autoship_Custom_Discounts_User_Role */
 			if ( self::user_has_role( $customer->get_id(), $role ) ) {
-				$discount = max( $role->get_discount(), $discount );
+				$discount_rate = max( $role->get_discount_rate(), $discount_rate );
 			}
 		}
 		
+		return $discount_rate;
+	}
+	
+	/**
+	 * 
+	 * @param WC_Autoship_Customer $customer
+	 * @param WC_Autoship_Schedule $schedule
+	 */
+	public static function calculate_discount( $customer, $schedule ) {
+		// Product discount
+		$item_discount_total = 0.0;
+		$item_subtotal = 0.0;
+		$items = $schedule->get_items();
+		foreach ( $items as $item ) { /* @var $item WC_Autoship_Schedule_Item */
+			$product = $item->get_product();
+			$product_price = $product->get_price();
+			$item_subtotal += $item->get( 'qty' ) * $product_price;
+			$product_discount_rate = self::calculate_product_discount_rate( $product, $item, $schedule, $customer );
+			if ( $product_discount_rate > 0.0 && $product_discount_rate <= 1.0 ) {
+				$product_discount_price = $product_discount_rate * $product_price;
+				$item_discount_total += $product_discount_price;
+			}
+		}
+		
+		// User role discount
+		$user_role_discount_total = 0;
+		$user_role_discount_rate = self::calculate_user_role_discount_rate( $customer );
+		if ( $user_role_discount_rate > 0.0 && $user_role_discount_rate <= 1.0 ) {
+			$user_role_discount_total = $user_role_discount_rate * $item_subtotal;
+		}
+		
+		$discount = max( $item_discount_total, $user_role_discount_total );
 		return $discount;
 	}
 	

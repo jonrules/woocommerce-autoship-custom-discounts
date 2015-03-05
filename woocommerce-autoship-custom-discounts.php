@@ -38,23 +38,14 @@ if ( is_plugin_active( 'woocommerce/woocommerce.php' ) ) {
 	
 	/**
 	 * 
-	 * @param double $price
-	 * @param WC_Product $product
-	 * @param WC_Autoship_Schedule_Item $item
-	 * @param WC_Autoship_Schedule $schedule
+	 * @param double $discount
 	 * @param WC_Autoship_Customer $customer
-	 * @return double
+	 * @param WC_Autoship_Schedule $schedule
 	 */
-	function wc_autoship_custom_discounts_product_price( $price, $product, $item, $schedule, $customer ) {
+	function wc_autoship_custom_discounts_order_discount( $discount, $customer, $schedule ) {
 		require_once( 'classes/wc-autoship-custom-discounts.php' );
-		$discount = WC_Autoship_Custom_Discounts::calculate_discount( $product, $item, $schedule, $customer );
-		if ( $discount > 0.0 && $discount <= 1.0 ) {
-			return $price * ( 1 - $discount );
-		}
-		return $price;
+		$discount = WC_Autoship_Custom_Discounts::calculate_discount( $customer, $schedule );
+		return $discount;
 	}
-	add_filter( 'wc_autoship_product_price', 'wc_autoship_custom_discounts_product_price', 10, 5 );
-	
-	
-	
+	add_filter( 'wc_autoship_discount', 'wc_autoship_custom_discounts_order_discount', 10, 3 );
 }

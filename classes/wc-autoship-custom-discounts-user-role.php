@@ -7,19 +7,19 @@ class WC_Autoship_Custom_Discounts_User_Role {
 	 */
 	private $_slug;
 	/**
-	 * Item discount
+	 * Item discount rate
 	 * @var double
 	 */
-	private $_discount;
+	private $_discount_rate;
 	
 	/**
 	 * 
 	 * @param string $slug
 	 * @param double $discount
 	 */
-	public function __construct( $slug, $discount ) {
+	public function __construct( $slug, $discount_rate ) {
 		$this->set_slug( $slug );
-		$this->set_discount( $discount );
+		$this->set_discount_rate( $discount_rate );
 	}
 	
 	public function get_slug() {
@@ -30,11 +30,11 @@ class WC_Autoship_Custom_Discounts_User_Role {
 		$this->_slug = $slug;
 	}
 	
-	public function get_discount() {
-		return $this->_discount;
+	public function get_discount_rate() {
+		return $this->_discount_rate;
 	}
 	
-	public function set_discount( $discount ) {
-		$this->_discount = $discount;
+	public function set_discount_rate( $discount_rate ) {
+		$this->_discount_rate = $discount_rate;
 	}
 }

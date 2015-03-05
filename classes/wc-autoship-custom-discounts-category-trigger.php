@@ -17,10 +17,10 @@ class WC_Autoship_Custom_Discounts_Category_Trigger {
 	 */
 	private $_quantity;
 	/**
-	 * Item discount
+	 * Item discount rate
 	 * @var double
 	 */
-	private $_discount;
+	private $_discount_rate;
 	
 	/**
 	 * 
@@ -29,11 +29,11 @@ class WC_Autoship_Custom_Discounts_Category_Trigger {
 	 * @param int $quantity
 	 * @param double $discount
 	 */
-	public function __construct( $trigger_category, $discount_category, $quantity, $discount ) {
+	public function __construct( $trigger_category, $discount_category, $quantity, $discount_rate ) {
 		$this->set_trigger_category( $trigger_category );
 		$this->set_discount_category( $discount_category );
 		$this->set_quantity( $quantity );
-		$this->set_discount( $discount );
+		$this->set_discount_rate( $discount_rate );
 	}
 	
 	public function get_trigger_category() {
@@ -60,11 +60,11 @@ class WC_Autoship_Custom_Discounts_Category_Trigger {
 		$this->_quantity = $quantity;
 	}
 	
-	public function get_discount() {
-		return $this->_discount;
+	public function get_discount_rate() {
+		return $this->_discount_rate;
 	}
 	
-	public function set_discount( $discount ) {
-		$this->_discount = $discount;
+	public function set_discount_rate( $discount_rate ) {
+		$this->_discount_rate = $discount_rate;
 	}
 }

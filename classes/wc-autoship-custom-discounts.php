@@ -12,6 +12,7 @@ class WC_Autoship_Custom_Discounts {
 	 * @return WC_Autoship_Custom_Discounts_Category_Trigger[]
 	 */
 	public static function get_discount_category_triggers() {
+		require_once( 'wc-autoship-custom-discounts-category-trigger.php' );
 		if ( empty( self::$_discount_category_triggers ) ) {
 			self::$_discount_category_triggers = array(
 				new WC_Autoship_Custom_Discounts_Category_Trigger( 'qty-trigger', 'qty-discount', 2, 0.15 ),
@@ -25,6 +26,7 @@ class WC_Autoship_Custom_Discounts {
 	 * @return WC_Autoship_Custom_Discounts_User_Role[]
 	 */
 	public static function get_discount_user_roles() {
+		require_once( 'wc-autoship-custom-discounts-user-role.php' );
 		if ( empty( self::$_discount_user_roles ) ) {
 			self::$_discount_user_roles = array(
 				new WC_Autoship_Custom_Discounts_User_Role( 'athletes_performance', 0.15 ),
@@ -42,16 +44,16 @@ class WC_Autoship_Custom_Discounts {
 	 */
 	public static function calculate_product_discount_rate( $product, $item, $schedule, $customer ) {
 		$discount_rate = 0.0;
-		$category_triggers = self::get_discount_rate_category_triggers();
+		$category_triggers = self::get_discount_category_triggers();
 		$items = $schedule->get_items();
 		
 		// Category triggers
 		foreach ( $category_triggers as $trigger ) { /* @var $trigger WC_Autoship_Custom_Discounts_Category_Trigger */
-			if ( ! self::product_is_in_category( $product->id, array( $trigger->get_discount_rate_category() ) ) ) {
+			if ( ! self::product_is_in_category( $product->id, array( $trigger->get_discount_category() ) ) ) {
 				continue;
 			}
 			
-			$trigger_quantity = 0;
+			$trigger_count = 0;
 			$trigger_category = array( $trigger->get_trigger_category() );
 			foreach ( $items as $line_item ) { /* @var $line_item WC_Autoship_Schedule_Item */
 				$in_trigger_category = self::product_is_in_category( $line_item->get_product_id(), $trigger_category );
@@ -74,7 +76,7 @@ class WC_Autoship_Custom_Discounts {
 	 */
 	public static function calculate_user_role_discount_rate( $customer ) {
 		$discount_rate = 0.0;
-		$discount_rate_user_roles = self::get_discount_rate_user_roles();
+		$discount_rate_user_roles = self::get_discount_user_roles();
 		
 		foreach ( $discount_rate_user_roles as $role ) { /* @var $role WC_Autoship_Custom_Discounts_User_Role */
 			if ( self::user_has_role( $customer->get_id(), $role ) ) {
@@ -101,7 +103,7 @@ class WC_Autoship_Custom_Discounts {
 			$item_subtotal += $item->get( 'qty' ) * $product_price;
 			$product_discount_rate = self::calculate_product_discount_rate( $product, $item, $schedule, $customer );
 			if ( $product_discount_rate > 0.0 && $product_discount_rate <= 1.0 ) {
-				$product_discount_price = $product_discount_rate * $product_price;
+				$product_discount_price = $product_discount_rate * $product_price * $item->get( 'qty' );
 				$item_discount_total += $product_discount_price;
 			}
 		}
@@ -139,7 +141,7 @@ class WC_Autoship_Custom_Discounts {
 	 * @param WC_Autoship_Custom_Discounts_User_Role $role
 	 * @return boolean
 	 */
-	function user_has_role( $user_id, $role ) {
+	public static function user_has_role( $user_id, $role ) {
 		$user = get_userdata( $user_id );
 		if ( empty( $user ) ) {
 			return false;

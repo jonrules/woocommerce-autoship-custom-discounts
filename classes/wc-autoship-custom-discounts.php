@@ -46,14 +46,14 @@ class WC_Autoship_Custom_Discounts {
 		$items = $schedule->get_items();
 		
 		// Category triggers
-		foreach ( $category_triggers as $trigger ) {/** @var WC_Autoship_Custom_Discounts_Category_Trigger $trigger **/
+		foreach ( $category_triggers as $trigger ) { /* @var $trigger WC_Autoship_Custom_Discounts_Category_Trigger */
 			if ( ! self::product_is_in_category( $product->id, array( $trigger->get_discount_category() ) ) ) {
 				continue;
 			}
 			
 			$trigger_quantity = 0;
 			$trigger_category = array( $trigger->get_trigger_category() );
-			foreach ( $items as $line_item ) {/** @var WC_Autoship_Schedule_Item $line_item **/
+			foreach ( $items as $line_item ) { /* @var $line_item WC_Autoship_Schedule_Item */
 				$in_trigger_category = self::product_is_in_category( $line_item->get_product_id(), $trigger_category );
 				if ( $in_trigger_category ) {
 					$trigger_count += $line_item->get( 'qty' );
@@ -76,7 +76,7 @@ class WC_Autoship_Custom_Discounts {
 		$discount = 0.0;
 		$discount_user_roles = self::get_discount_user_roles();
 		
-		foreach ( $discount_user_roles as $role ) { /** @var WC_Autoship_Custom_Discounts_User_Role $role **/
+		foreach ( $discount_user_roles as $role ) { /* @var $role WC_Autoship_Custom_Discounts_User_Role */
 			if ( self::user_has_role( $customer->get_id(), $role ) ) {
 				$discount = max( $role->get_discount(), $discount );
 			}

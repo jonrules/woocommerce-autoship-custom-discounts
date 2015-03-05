@@ -44,7 +44,7 @@ if ( is_plugin_active( 'woocommerce/woocommerce.php' ) ) {
 	 */
 	function wc_autoship_custom_discounts_order_discount( $discount, $customer, $schedule ) {
 		require_once( 'classes/wc-autoship-custom-discounts.php' );
-		$discount = WC_Autoship_Custom_Discounts::calculate_discount( $customer, $schedule );
+		$discount += WC_Autoship_Custom_Discounts::calculate_discount( $customer, $schedule );
 		return $discount;
 	}
 	add_filter( 'wc_autoship_discount', 'wc_autoship_custom_discounts_order_discount', 10, 3 );

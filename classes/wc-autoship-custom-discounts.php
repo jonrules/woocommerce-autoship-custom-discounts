@@ -72,6 +72,40 @@ class WC_Autoship_Custom_Discounts {
 	}
 	
 	/**
+	 * Calculate product discount for a line item
+	 * @param WC_Autoship_Schedule_Item $item
+	 */
+	public static function calculate_line_product_discount_rate( $item ) {
+		$product = $item->get_product();
+		
+		// Category triggers
+		$category_triggers = self::get_discount_category_triggers();
+		// Filter active category triggers
+		$active_category_triggers = array();
+		$schedule_items = $item->get_schedule()->get_items();
+		foreach ( $category_triggers as $trigger ) { /* @var $trigger WC_Autoship_Custom_Discounts_Category_Trigger */
+			foreach ( $schedule_items as $schedule_item ) {
+				$in_trigger_category = self::product_is_in_category( $schedule_item->get_product_id(), array( $trigger->get_trigger_category() ) );
+				if ( $in_trigger_category && $schedule_item->get_quantity() >= $trigger->get_quantity() ) {
+					$active_category_triggers[] = $trigger;
+				}
+			}
+		}
+		
+		// Calculate discount rates
+		$discount_rate = 0.0;
+		foreach ( $active_category_triggers as $trigger ) { /* @var $trigger WC_Autoship_Custom_Discounts_Category_Trigger */	
+			$discount_category = array( $trigger->get_discount_category() );
+			$in_discount_category = self::product_is_in_category( $item->get_product_id(), $discount_category );
+			if ( $in_discount_category ) {
+				// Discount rate found
+				$discount_rate = max( $trigger->get_discount_rate(), $discount_rate );
+			}
+		}
+		return $discount_rate;
+	}
+	
+	/**
 	 * @param WC_Autoship_Customer $customer
 	 */
 	public static function calculate_user_role_discount_rate( $customer ) {
@@ -117,6 +151,22 @@ class WC_Autoship_Custom_Discounts {
 		
 		$discount = max( $item_discount_total, $user_role_discount_total );
 		return $discount;
+	}
+	
+	/**
+	 * Calculate line discount
+	 * @param int $product_id
+	 * @param float $price
+	 * @param WC_Autoship_Customer $customer
+	 */
+	public static function calculate_line_discount( $item, $autoship_price ) {
+		$product_discount_rate = self::calculate_line_product_discount_rate( $item );
+		$user_role_discount_rate = self::calculate_user_role_discount_rate( $item->get_schedule()->get_customer() );
+		$discount_rate = max( $product_discount_rate, $user_role_discount_rate );
+		if ( $discount_rate > 0.0 && $discount_rate <= 1.0 ) {
+			return $autoship_price * $discount_rate * $item->get_quantity();
+		}
+		return 0.0;
 	}
 	
 	/**

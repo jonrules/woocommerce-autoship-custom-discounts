@@ -3,7 +3,7 @@
 Plugin Name: WC Auto-Ship Custom Discounts
 Plugin URI: http://patternsinthecloud.com
 Description: Apply rule-based discounts to products on Auto-Ship.
-Version: 1.0
+Version: 1.0.1
 Author: Patterns in the Cloud
 Author URI: http://patternsinthecloud.com
 License: Single-site
@@ -44,8 +44,23 @@ if ( is_plugin_active( 'woocommerce/woocommerce.php' ) ) {
 	 */
 	function wc_autoship_custom_discounts_order_discount( $discount, $customer, $schedule ) {
 		require_once( 'classes/wc-autoship-custom-discounts.php' );
-		$discount += WC_Autoship_Custom_Discounts::calculate_discount( $customer, $schedule );
+		$discount = WC_Autoship_Custom_Discounts::calculate_discount( $customer, $schedule );
 		return $discount;
 	}
-	add_filter( 'wc_autoship_discount', 'wc_autoship_custom_discounts_order_discount', 10, 3 );
+// 	add_filter( 'wc_autoship_discount', 'wc_autoship_custom_discounts_order_discount', 10, 3 );
+	
+	/**
+	 * Caculate autoship line discount
+	 * @param float $discount
+	 * @param int $item_id
+	 * @param float $autoship_price
+	 * @return float;
+	 */
+	function wc_autoship_custom_discounts_line_discount( $discount, $item_id, $autoship_price ) {
+		$item = new WC_Autoship_Schedule_item( $item_id );
+		require_once( 'classes/wc-autoship-custom-discounts.php' );
+		$discount = WC_Autoship_Custom_Discounts::calculate_line_discount( $item, $autoship_price );
+		return $discount;
+	}
+	add_filter( 'wc_autoship_line_discount', 'wc_autoship_custom_discounts_line_discount', 10, 3 );
 }

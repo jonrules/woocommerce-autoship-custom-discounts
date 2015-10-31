@@ -82,11 +82,17 @@ class WC_Autoship_Custom_Discounts {
 		$category_triggers = self::get_discount_category_triggers();
 		// Filter active category triggers
 		$active_category_triggers = array();
+		$trigger_counts = array();
 		$schedule_items = $item->get_schedule()->get_items();
 		foreach ( $category_triggers as $trigger ) { /* @var $trigger WC_Autoship_Custom_Discounts_Category_Trigger */
 			foreach ( $schedule_items as $schedule_item ) {
-				$in_trigger_category = self::product_is_in_category( $schedule_item->get_product_id(), array( $trigger->get_trigger_category() ) );
-				if ( $in_trigger_category && $schedule_item->get_quantity() >= $trigger->get_quantity() ) {
+				$trigger_category = $trigger->get_trigger_category();
+				$in_trigger_category = self::product_is_in_category( $schedule_item->get_product_id(), array( $trigger_category ) );
+				if ( $in_trigger_category ) {
+					if ( ! isset( $trigger_counts[ $trigger_category ] ) ) {
+						$trigger_counts[ $trigger_category ] = 0;
+					}
+					$trigger_counts[ $trigger_category ] += $schedule_item->get_quantity();
 					$active_category_triggers[] = $trigger;
 				}
 			}
@@ -97,7 +103,7 @@ class WC_Autoship_Custom_Discounts {
 		foreach ( $active_category_triggers as $trigger ) { /* @var $trigger WC_Autoship_Custom_Discounts_Category_Trigger */	
 			$discount_category = array( $trigger->get_discount_category() );
 			$in_discount_category = self::product_is_in_category( $item->get_product_id(), $discount_category );
-			if ( $in_discount_category ) {
+			if ( $in_discount_category && $trigger_counts[ $trigger->get_trigger_category() ] >= $trigger->get_quantity() ) {
 				// Discount rate found
 				$discount_rate = max( $trigger->get_discount_rate(), $discount_rate );
 			}

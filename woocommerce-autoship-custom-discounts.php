@@ -3,7 +3,7 @@
 Plugin Name: WC Auto-Ship Custom Discounts
 Plugin URI: http://patternsinthecloud.com
 Description: Apply rule-based discounts to products on Auto-Ship.
-Version: 1.0.1
+Version: 1.0.2
 Author: Patterns in the Cloud
 Author URI: http://patternsinthecloud.com
 License: Single-site
